@@ -1,16 +1,16 @@
-import {MonitorOptions, monitor} from '@colyseus/monitor';
-import {Server} from 'colyseus';
-import fetch from 'cross-fetch';
+import { MonitorOptions, monitor } from '@colyseus/monitor';
+import { Server } from 'colyseus';
 import dotenv from 'dotenv';
-import express, {Application, Request, Response} from 'express';
-import {createServer} from 'http';
-import {WebSocketTransport} from '@colyseus/ws-transport';
+import express, { Application, Request, Response } from 'express';
+import { createServer } from 'http';
+import { WebSocketTransport } from '@colyseus/ws-transport';
 import path from 'path';
+import { fetchAndRetry } from './utils';
 
-import {GAME_NAME} from './shared/Constants';
-import {StateHandlerRoom} from './rooms/StateHandlerRoom';
+import { GAME_NAME } from './shared/Constants';
+import { StateHandlerRoom } from './rooms/StateHandlerRoom';
 
-dotenv.config({path: '../../.env'});
+dotenv.config({ path: '../../.env' });
 
 const app: Application = express();
 const router = express.Router();
@@ -40,8 +40,8 @@ if (process.env.NODE_ENV === 'production') {
 router.use('/colyseus', monitor(server as Partial<MonitorOptions>));
 
 // Fetch token from developer portal and return to the embedded app
-router.post('/token', async (req: Request, res: Response) => {
-  const response = await fetch(`https://discord.com/api/oauth2/token`, {
+router.post('/api/token', async (req: Request, res: Response) => {
+  const response = await fetchAndRetry('https://discord.com/api/oauth2/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -54,15 +54,14 @@ router.post('/token', async (req: Request, res: Response) => {
     }),
   });
 
-  const {access_token} = (await response.json()) as {
+  const { access_token } = (await response.json()) as {
     access_token: string;
   };
 
-  res.send({access_token});
+  res.send({ access_token });
 });
 
-// Using a flat route in dev to match the vite server proxy config
-app.use(process.env.NODE_ENV === 'production' ? '/api' : '/', router);
+app.use('/', router);
 
 server.listen(port).then(() => {
   console.log(`App is listening on port ${port} !`);

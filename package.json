@@ -1,7 +1,7 @@
 {
-  "name": "activitytest",
+  "name": "world",
   "version": "0.1.0",
-  "description": "activitytest",
+  "description": "world",
   "main": "index.js",
   "scripts": {
     "dev": "pnpm run --filter \"./packages/**\" --parallel dev",

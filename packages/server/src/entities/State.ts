@@ -1,5 +1,7 @@
-import { Schema, MapSchema, type } from '@colyseus/schema';
-import { TPlayerOptions, Player, handleKeyDown, handleKeyUp } from './Player';
+import { Schema, MapSchema, type, filter } from '@colyseus/schema';
+import { TPlayerOptions, Player } from './Player';
+import { Chunk } from './Chunk';
+import { Client } from 'colyseus';
 
 export interface IState {
   roomName: string;
@@ -16,9 +18,14 @@ export class State extends Schema {
   @type('string')
   public channelId: string;
 
-  serverAttribute = 'this attribute wont be sent to the client-side';
+  @filter(function (
+    this: State, client: Client, value: string, root: Schema
+  ) {
+    // TODO: only send nearby chunks to clients
+    return true;
+  })
+  @type({ map: Chunk }) chunks = new MapSchema<Chunk>();
 
-  // Init
   constructor(attributes: IState) {
     super();
     this.roomName = attributes.roomName;
@@ -30,7 +37,7 @@ export class State extends Schema {
   }
 
   createPlayer(sessionId: string, playerOptions: TPlayerOptions) {
-    const existingPlayer = Array.from(this.players.values()).find((p) => p.sessionId === sessionId);
+    const existingPlayer = Array.from(this.players.values()).find((p) => p.userId === playerOptions.userId);
     if (existingPlayer == null) {
       this.players.set(playerOptions.userId, new Player({ ...playerOptions, sessionId }));
     }
@@ -43,28 +50,7 @@ export class State extends Schema {
     }
   }
 
-  handleKeyDown(sessionId: string, code: string) {
-    const player = this._getPlayer(sessionId);
-    if (!player) return;
-    handleKeyDown(player, code);
-  }
+  movePlayer(sessionId: string, data: any) {
 
-  handleKeyUp(sessionId: string, code: string) {
-    const player = this._getPlayer(sessionId);
-    if (!player) return;
-    handleKeyUp(player, code);
-  }
-
-  handlePointerDown(sessionId: string, dest: [number, number]) {
-    const player = this._getPlayer(sessionId);
-    if (!player) return;
-    [player.destX, player.destY] = dest;
-    player.dest = true;
-  }
-
-  handlePointerUp(sessionId: string) {
-    const player = this._getPlayer(sessionId);
-    if (!player) return;
-    player.dest = false;
   }
 }

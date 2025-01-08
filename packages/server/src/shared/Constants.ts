@@ -1,10 +1,3 @@
-export const GAME_NAME = 'game';
+export const GAME_NAME = 'world';
 export const KEYS_TO_RECORD = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD']);
-export const IGNORE_PROPS = new Set(['dest', 'destX', 'destY', 'keys']);
-export const MAX_SPEED = 500000000000000;
-export const WIDTH = 1280;
-export const HEIGHT = 720;
-export const WALL_ELASTICITY = 1;
-export const FRAME_TIME = 16.6;
-export const ACCELERATION = 0.1;
-export const MAX_ACCELERATION = 0.1;
+export const TICK_TIME = 1000 / 60;
